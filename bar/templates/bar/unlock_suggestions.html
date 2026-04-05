@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingredientes que desbloquean cocktails</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f6f6f6;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        li {
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="{% url 'bar:public_menu' %}">← Volver al menú</a></p>
+
+        <h1>🛒 Ingredientes que más cocktails desbloquean</h1>
+
+        <ul>
+            {% for ingredient, count in suggestions %}
+                <li><strong>{{ ingredient }}</strong>: desbloquea {{ count }} cocktail{{ count|pluralize:"s" }}</li>
+            {% empty %}
+                <li>No hay sugerencias por ahora.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

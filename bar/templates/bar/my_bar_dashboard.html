@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Bar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f6f6f6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        ul {
+            padding-left: 18px;
+        }
+        a {
+            text-decoration: none;
+        }
+        .big-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .small {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>
+            <a href="{% url 'bar:public_menu' %}">← Ir al menú público</a>
+        </p>
+
+        <h1>🍾 Mi Bar</h1>
+        <p class="small">Tu panel privado de operación.</p>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Cocktails disponibles</h2>
+                <div class="big-number">{{ available_count }}</div>
+            </div>
+
+            <div class="card">
+                <h2>Cocktails casi disponibles</h2>
+                <div class="big-number">{{ almost_available|length }}</div>
+            </div>
+
+            <div class="card">
+                <h2>No disponibles</h2>
+                <div class="big-number">{{ unavailable_count }}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Ingredientes disponibles</h2>
+            <ul>
+                {% for ingredient in ingredients_in_stock %}
+                    <li>{{ ingredient.name }} ({{ ingredient.get_category_display }})</li>
+                {% empty %}
+                    <li>No tienes ingredientes marcados como disponibles.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Ingredientes que se están acabando</h2>
+            <ul>
+                {% for ingredient in ingredients_low %}
+                    <li>{{ ingredient.name }}</li>
+                {% empty %}
+                    <li>No hay ingredientes marcados como bajos.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Lista de compra</h2>
+            <ul>
+                {% for item in shopping_items %}
+                    <li>{{ item.ingredient.name }}</li>
+                {% empty %}
+                    <li>No hay ingredientes pendientes de compra.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Cocktails casi disponibles</h2>
+            <ul>
+                {% for item in almost_available %}
+                    <li>
+                        <strong>{{ item.cocktail.name }}</strong>
+                        — falta: {{ item.missing|join:", " }}
+                    </li>
+                {% empty %}
+                    <li>No hay cocktails casi disponibles.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
