@@ -10,5 +10,4 @@ urlpatterns = [
     path("cocktail/<int:cocktail_id>/", views.cocktail_detail, name="cocktail_detail"),
     path("unlock-suggestions/", views.unlock_suggestions, name="unlock_suggestions"),
     path("my-bar/", views.my_bar_dashboard, name="my_bar_dashboard"),
-    path("bootstrap-admin-2026/", views.bootstrap_admin, name="bootstrap_admin"),
 ]
