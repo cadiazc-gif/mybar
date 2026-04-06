@@ -243,6 +243,7 @@ def runtime_diagnose(request):
     lines.append(f"HOST: {settings.DATABASES['default'].get('HOST')}")
     lines.append(f"PORT: {settings.DATABASES['default'].get('PORT')}")
     lines.append(f"DATABASE_URL present: {'DATABASE_URL' in os.environ}")
+    lines.append(f"TEST_VAR: {os.environ.get('TEST_VAR')}")
     lines.append(f"Connected vendor: {connection.vendor}")
 
     try:
