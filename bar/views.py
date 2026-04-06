@@ -254,3 +254,4 @@ def runtime_diagnose(request):
         lines.append(f"user query ERROR: {e}")
 
     return HttpResponse("<br>".join(lines))
+    
