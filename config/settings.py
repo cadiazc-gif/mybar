@@ -81,7 +81,7 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get("SQLITE_PATH", "/app/data/db.sqlite3"),
+        'NAME': '/app/data/db.sqlite3',
     }
 }
 
