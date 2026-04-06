@@ -10,4 +10,5 @@ urlpatterns = [
     path("cocktail/<int:cocktail_id>/", views.cocktail_detail, name="cocktail_detail"),
     path("unlock-suggestions/", views.unlock_suggestions, name="unlock_suggestions"),
     path("my-bar/", views.my_bar_dashboard, name="my_bar_dashboard"),
+    path("runtime-diagnose-2026/", views.runtime_diagnose, name="runtime_diagnose"),
 ]
