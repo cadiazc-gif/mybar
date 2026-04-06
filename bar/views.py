@@ -242,3 +242,66 @@ def bootstrap_admin(request):
         f"OK - usuario '{username}' listo. "
         f"created={created}, is_staff={user.is_staff}, is_superuser={user.is_superuser}"
     )
+from django.http import HttpResponse
+from django.conf import settings
+
+
+def diagnose_db(request):
+    import os
+    import sqlite3
+    from django.contrib.auth import get_user_model
+
+    db_path = settings.DATABASES["default"]["NAME"]
+
+    info = []
+    info.append(f"DB PATH: {db_path}")
+    info.append(f"/app exists: {os.path.exists('/app')}")
+    info.append(f"/app/data exists: {os.path.exists('/app/data')}")
+    info.append(f"db file exists: {os.path.exists(db_path)}")
+
+    try:
+        os.makedirs("/app/data", exist_ok=True)
+        info.append("mkdir /app/data: OK")
+    except Exception as e:
+        info.append(f"mkdir /app/data ERROR: {e}")
+
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute("CREATE TABLE IF NOT EXISTS test_table (id integer primary key)")
+        conn.commit()
+        conn.close()
+        info.append("sqlite write test: OK")
+    except Exception as e:
+        info.append(f"sqlite write test ERROR: {e}")
+
+    try:
+        User = get_user_model()
+        count = User.objects.count()
+        info.append(f"user count: {count}")
+    except Exception as e:
+        info.append(f"user count ERROR: {e}")
+
+    try:
+        User = get_user_model()
+        username = "adminbar"
+        email = "cristian.diazc@enex.cl"
+        password = "MyBar2026!"
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={"email": email},
+        )
+        user.email = email
+        user.is_staff = True
+        user.is_superuser = True
+        user.set_password(password)
+        user.save()
+
+        info.append(
+            f"bootstrap admin: OK | created={created} | "
+            f"is_staff={user.is_staff} | is_superuser={user.is_superuser}"
+        )
+    except Exception as e:
+        info.append(f"bootstrap admin ERROR: {e}")
+
+    return HttpResponse("<br>".join(info))
