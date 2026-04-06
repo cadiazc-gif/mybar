@@ -218,7 +218,6 @@ def collection_menu(request, slug):
     return render(request, "bar/public_menu.html", context)
 from django.http import HttpResponse
 
-
 def bootstrap_admin(request):
     from django.contrib.auth import get_user_model
 
