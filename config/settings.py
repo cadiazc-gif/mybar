@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,14 +22,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-jf4++93ou5jqjt_uxb6&814p$(d&wevd*((pmx)-!c9n71fwal'
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-jf4++93ou5jqjt_uxb6&814p$(d&wevd*((pmx)-!c9n71fwal",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in {"1", "true", "yes", "on"}
 
-ALLOWED_HOSTS = ["mybar-production.up.railway.app", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "mybar-production.up.railway.app,127.0.0.1,localhost",
+    ).split(",")
+    if host.strip()
+]
 
-CSRF_TRUSTED_ORIGINS = ["https://mybar-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get(
+        "DJANGO_CSRF_TRUSTED_ORIGINS",
+        "https://mybar-production.up.railway.app",
+    ).split(",")
+    if origin.strip()
+]
 
 
 # Application definition
@@ -76,9 +95,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import os
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-if os.environ.get("PGHOST"):
+if DATABASE_URL:
+    from urllib.parse import urlparse
+
+    parsed = urlparse(DATABASE_URL)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": parsed.path.lstrip("/"),
+            "USER": parsed.username,
+            "PASSWORD": parsed.password,
+            "HOST": parsed.hostname,
+            "PORT": parsed.port,
+            "CONN_MAX_AGE": 600,
+            "OPTIONS": {"sslmode": "require"},
+        }
+    }
+elif os.environ.get("PGHOST"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -87,6 +122,7 @@ if os.environ.get("PGHOST"):
             "PASSWORD": os.environ.get("PGPASSWORD"),
             "HOST": os.environ.get("PGHOST"),
             "PORT": os.environ.get("PGPORT"),
+            "CONN_MAX_AGE": 600,
         }
     }
 else:
@@ -133,3 +169,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True

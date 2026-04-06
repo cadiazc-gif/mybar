@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from .models import Cocktail, Tag, MenuCollection, Ingredient, ShoppingItem
 
 
@@ -232,26 +232,23 @@ def runtime_diagnose(request):
     from django.contrib.auth import get_user_model
     from django.db import connection
     from django.conf import settings
-    from django.http import HttpResponse
     import os
+
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return HttpResponseForbidden("Staff only")
 
     User = get_user_model()
 
     lines = []
     lines.append(f"ENGINE: {settings.DATABASES['default']['ENGINE']}")
-    lines.append(f"NAME: {settings.DATABASES['default']['NAME']}")
     lines.append(f"HOST: {settings.DATABASES['default'].get('HOST')}")
     lines.append(f"PORT: {settings.DATABASES['default'].get('PORT')}")
     lines.append(f"DATABASE_URL present: {'DATABASE_URL' in os.environ}")
-    lines.append(f"TEST_VAR: {os.environ.get('TEST_VAR')}")
     lines.append(f"Connected vendor: {connection.vendor}")
 
     try:
-        usernames = list(User.objects.values_list("username", flat=True))
-        lines.append(f"user count: {len(usernames)}")
-        lines.append(f"usernames: {', '.join(usernames) if usernames else '(none)'}")
+        lines.append(f"user count: {User.objects.count()}")
     except Exception as e:
         lines.append(f"user query ERROR: {e}")
 
     return HttpResponse("<br>".join(lines))
-    
