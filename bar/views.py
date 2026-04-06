@@ -218,7 +218,6 @@ def collection_menu(request, slug):
     return render(request, "bar/public_menu.html", context)
 from django.http import HttpResponse
 
-def bootstrap_admin(request):
     from django.contrib.auth import get_user_model
 
     User = get_user_model()
@@ -305,3 +304,31 @@ def diagnose_db(request):
         info.append(f"bootstrap admin ERROR: {e}")
 
     return HttpResponse("<br>".join(info))
+
+    from django.http import HttpResponse
+
+
+def bootstrap_admin(request):
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+
+    username = "adminbar"
+    email = "cristian.diazc@enex.cl"
+    password = "MyBar2026!"
+
+    user, created = User.objects.get_or_create(
+        username=username,
+        defaults={"email": email},
+    )
+
+    user.email = email
+    user.is_staff = True
+    user.is_superuser = True
+    user.set_password(password)
+    user.save()
+
+    return HttpResponse(
+        f"OK - usuario '{username}' listo. "
+        f"created={created}, is_staff={user.is_staff}, is_superuser={user.is_superuser}"
+    )
