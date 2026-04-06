@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
 from .models import Cocktail, Tag, MenuCollection, Ingredient, ShoppingItem
 
 
@@ -28,7 +29,6 @@ def public_menu(request):
 
     for cocktail in cocktails:
         availability = cocktail.check_availability()
-
         cocktail_data.append({
             "object": cocktail,
             "status": availability["status"],
@@ -82,7 +82,9 @@ def cocktail_detail(request, cocktail_id):
 
 def unlock_suggestions(request):
     ingredients = Ingredient.objects.all()
-    cocktails = Cocktail.objects.filter(visible_public=True).prefetch_related("recipe_items__ingredient")
+    cocktails = Cocktail.objects.filter(
+        visible_public=True
+    ).prefetch_related("recipe_items__ingredient")
 
     suggestion_map = {}
 
@@ -108,12 +110,18 @@ def unlock_suggestions(request):
         "suggestions": suggestions
     })
 
+
 def my_bar_dashboard(request):
     ingredients_in_stock = Ingredient.objects.filter(in_stock=True).order_by("category", "name")
     ingredients_low = Ingredient.objects.filter(is_low=True).order_by("name")
-    shopping_items = ShoppingItem.objects.filter(pending=True, purchased=False).select_related("ingredient")
+    shopping_items = ShoppingItem.objects.filter(
+        pending=True,
+        purchased=False
+    ).select_related("ingredient")
 
-    cocktails = Cocktail.objects.filter(visible_public=True).prefetch_related("recipe_items__ingredient")
+    cocktails = Cocktail.objects.filter(
+        visible_public=True
+    ).prefetch_related("recipe_items__ingredient")
 
     available = []
     almost_available = []
@@ -142,6 +150,7 @@ def my_bar_dashboard(request):
     }
 
     return render(request, "bar/my_bar_dashboard.html", context)
+
 
 def public_qr_menu(request):
     collection = MenuCollection.objects.filter(
@@ -183,6 +192,7 @@ def public_qr_menu(request):
         "show_all": False,
     })
 
+
 def collection_menu(request, slug):
     collection = get_object_or_404(
         MenuCollection,
@@ -216,96 +226,6 @@ def collection_menu(request, slug):
         "show_all": False,
     }
     return render(request, "bar/public_menu.html", context)
-from django.http import HttpResponse
-
-    from django.contrib.auth import get_user_model
-
-    User = get_user_model()
-
-    username = "adminbar"
-    email = "cristian.diazc@enex.cl"
-    password = "MyBar2026!"
-
-    user, created = User.objects.get_or_create(
-        username=username,
-        defaults={"email": email},
-    )
-
-    user.email = email
-    user.is_staff = True
-    user.is_superuser = True
-    user.set_password(password)
-    user.save()
-
-    return HttpResponse(
-        f"OK - usuario '{username}' listo. "
-        f"created={created}, is_staff={user.is_staff}, is_superuser={user.is_superuser}"
-    )
-from django.http import HttpResponse
-from django.conf import settings
-
-
-def diagnose_db(request):
-    import os
-    import sqlite3
-    from django.contrib.auth import get_user_model
-
-    db_path = settings.DATABASES["default"]["NAME"]
-
-    info = []
-    info.append(f"DB PATH: {db_path}")
-    info.append(f"/app exists: {os.path.exists('/app')}")
-    info.append(f"/app/data exists: {os.path.exists('/app/data')}")
-    info.append(f"db file exists: {os.path.exists(db_path)}")
-
-    try:
-        os.makedirs("/app/data", exist_ok=True)
-        info.append("mkdir /app/data: OK")
-    except Exception as e:
-        info.append(f"mkdir /app/data ERROR: {e}")
-
-    try:
-        conn = sqlite3.connect(db_path)
-        conn.execute("CREATE TABLE IF NOT EXISTS test_table (id integer primary key)")
-        conn.commit()
-        conn.close()
-        info.append("sqlite write test: OK")
-    except Exception as e:
-        info.append(f"sqlite write test ERROR: {e}")
-
-    try:
-        User = get_user_model()
-        count = User.objects.count()
-        info.append(f"user count: {count}")
-    except Exception as e:
-        info.append(f"user count ERROR: {e}")
-
-    try:
-        User = get_user_model()
-        username = "adminbar"
-        email = "cristian.diazc@enex.cl"
-        password = "MyBar2026!"
-
-        user, created = User.objects.get_or_create(
-            username=username,
-            defaults={"email": email},
-        )
-        user.email = email
-        user.is_staff = True
-        user.is_superuser = True
-        user.set_password(password)
-        user.save()
-
-        info.append(
-            f"bootstrap admin: OK | created={created} | "
-            f"is_staff={user.is_staff} | is_superuser={user.is_superuser}"
-        )
-    except Exception as e:
-        info.append(f"bootstrap admin ERROR: {e}")
-
-    return HttpResponse("<br>".join(info))
-
-    from django.http import HttpResponse
 
 
 def bootstrap_admin(request):
